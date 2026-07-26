@@ -1,10 +1,13 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Landing from "./pages/Landing/Landing";
+
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900">
-      <h1 className="text-5xl font-bold text-blue-500">
-        InvestIQ 🚀
-      </h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+         <Route path="/" element={<Landing />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

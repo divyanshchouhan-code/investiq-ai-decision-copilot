@@ -1,0 +1,57 @@
+.landing-container {
+    display: flex;
+    width: 100%;
+    min-height: 80vh;
+    background-color: #000000;
+}
+
+.left-container {
+    flex: 1;
+    /* border: 1px solid #ccc; */
+    padding: 40px;
+}
+
+.main-heading-landing-page {
+    color: #ffffff;
+    font-size: 50px;
+    font-weight: 600;
+}
+.brief-description {
+    font-size: 30px;
+    color: #ccc;
+}
+
+.button-container {
+    display: flex;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.button {
+    padding: 10px 30px;
+    border-radius: 10px;
+    border: none;
+    background-color: #ffffff;
+    color: #000;
+    margin-left: 20px;
+}
+
+.get-started-button {
+    border: 1px solid #ffffff;
+    color: #ffffff;
+    background-color: transparent;
+}
+
+.how-works-button {
+    background-color: blue;
+    color: #ffffff;
+}
+
+.highlight-heading {
+    color: blue;
+}
+
+
+.right-container {
+    flex: 1;
+}
