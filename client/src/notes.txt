@@ -1,3 +1,0 @@
-mongodb+srv://root:investpq109@cluster-1.qvw3dot.mongodb.net/?appName=cluster-1
-
-investpq109

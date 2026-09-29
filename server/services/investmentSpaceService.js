@@ -7,6 +7,16 @@ const {
     findLargestHolding
 } = require("./portfolioService");
 
+const {
+    getPortfolioRisk
+} = require("./riskService");
+
+const {
+    generateInvestmentInsights
+} = require("./insightService");
+
+const User = require("../models/User");
+
 
 const getInvestmentSpaceData = async (userId) => {
 
@@ -15,12 +25,29 @@ const getInvestmentSpaceData = async (userId) => {
     }
 
 
-    // Get investments with their latest market values
+    // --------------------------------
+    // GET USER
+    // --------------------------------
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+        throw new Error("User not found.");
+    }
+
+
+    // --------------------------------
+    // GET INVESTMENTS + CURRENT PRICES
+    // --------------------------------
+
     const investmentsWithValue =
         await getInvestmentsWithCurrentValue(userId);
 
 
-    // No portfolio
+    // --------------------------------
+    // EMPTY PORTFOLIO
+    // --------------------------------
+
     if (investmentsWithValue.length === 0) {
 
         return {
@@ -38,7 +65,24 @@ const getInvestmentSpaceData = async (userId) => {
                 concentration: 0,
                 numberOfHoldings: 0,
                 numberOfAssetTypes: 0
-            }
+            },
+
+            risk: {
+                score: 0,
+                level: "No Portfolio",
+                factors: {
+                    concentration: 0,
+                    holdings: 0,
+                    assetDiversification: 0
+                },
+                reasons: [
+                    "You don't have any investments in your portfolio yet."
+                ]
+            },
+
+            insights: [
+                "You don't have any investments in your portfolio yet."
+            ]
         };
     }
 
@@ -149,11 +193,45 @@ const getInvestmentSpaceData = async (userId) => {
     };
 
 
+    // --------------------------------
+    // RISK
+    // --------------------------------
+
+    const risk =
+        getPortfolioRisk(
+            analytics.concentration,
+            analytics.numberOfHoldings,
+            analytics.numberOfAssetTypes,
+            user.riskPreference
+        );
+
+
+    // --------------------------------
+    // INSIGHTS
+    // --------------------------------
+
+    const insights =
+        generateInvestmentInsights(
+            analytics.concentration,
+            analytics.numberOfHoldings,
+            analytics.numberOfAssetTypes,
+            analytics.largestHolding
+        );
+
+
+    // --------------------------------
+    // FINAL RESPONSE
+    // --------------------------------
+
     return {
 
         summary,
 
-        analytics
+        analytics,
+
+        risk,
+
+        insights
 
     };
 };
@@ -161,4 +239,4 @@ const getInvestmentSpaceData = async (userId) => {
 
 module.exports = {
     getInvestmentSpaceData
-};
+};  
