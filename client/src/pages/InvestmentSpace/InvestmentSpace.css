@@ -101,35 +101,42 @@
    NAVIGATION
 ========================================= */
 
+
 .space-nav {
     position: relative;
     z-index: 10;
 
-    height: 76px;
+    width: 100%;
+    min-height: 82px;
+    padding: 14px 32px;
+    box-sizing: border-box;
 
-    padding: 0 48px;
-
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
+    gap: 24px;
 
-    border-bottom:
-        1px solid rgba(255, 255, 255, 0.08);
-
-    background:
-        rgba(10, 8, 42, 0.35);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(10, 8, 42, 0.82);
 
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
 }
 
+/* Brand */
+
 .space-logo {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 11px;
 
-    font-size: 20px;
+    width: fit-content;
+    min-width: 0;
+
+    font-size: 24px;
     font-weight: 800;
+    letter-spacing: -0.8px;
+    white-space: nowrap;
 }
 
 .space-logo > span > span {
@@ -137,71 +144,237 @@
 }
 
 .logo-mark {
-    width: 34px;
-    height: 34px;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
 
     display: grid;
     place-items: center;
 
-    border-radius: 11px;
-
+    border-radius: 13px;
     background: var(--gradient-button);
 
-    box-shadow:
-        0 0 30px rgba(255, 32, 217, 0.25);
+    box-shadow: 0 0 25px rgba(255, 32, 217, 0.2);
 }
 
+/* Center title and status */
+
 .space-nav-center {
-    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
 
-    left: 50%;
-
-    transform: translateX(-50%);
-
-    font-size: 13px;
-
-    color: var(--text-muted);
-
-    text-transform: uppercase;
-
-    letter-spacing: 1.5px;
+    min-width: 0;
 }
 
 .space-nav-center .active {
     color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
 }
 
+/* AI status */
+
 .ai-status {
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
 
-    padding: 9px 14px;
+    padding: 10px 13px;
 
-    border:
-        1px solid rgba(255, 255, 255, 0.12);
-
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 999px;
 
-    background:
-        rgba(255, 255, 255, 0.05);
-
+    background: rgba(255, 255, 255, 0.045);
     color: var(--text-secondary);
 
     font-size: 12px;
+    white-space: nowrap;
 }
 
 .status-dot {
     width: 7px;
     height: 7px;
+    flex-shrink: 0;
 
     border-radius: 50%;
-
     background: var(--success);
-
-    box-shadow:
-        0 0 12px var(--success);
+    box-shadow: 0 0 10px var(--success);
 }
+
+/* Right-side actions */
+
+.space-nav-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+
+    min-width: 0;
+}
+
+/* Add Investment button */
+
+.space-nav-actions .add-investment-button {
+    min-height: 48px;
+    padding: 0 18px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    border: none;
+    border-radius: 14px;
+
+    background: var(--gradient-button);
+    color: #fff;
+
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.space-nav-actions .add-investment-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.25);
+}
+
+/* Sign Out */
+
+.signout-button {
+    min-height: 48px;
+    padding: 0 16px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 13px;
+
+    background: rgba(255, 255, 255, 0.045);
+    color: var(--text-primary);
+
+    font-size: 13px;
+    font-weight: 650;
+    white-space: nowrap;
+    cursor: pointer;
+
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.signout-button:hover {
+    background: rgba(248, 113, 113, 0.1);
+    border-color: rgba(248, 113, 113, 0.4);
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1150px) {
+    .space-nav {
+        padding: 14px 22px;
+        gap: 15px;
+    }
+
+    .space-logo {
+        font-size: 21px;
+    }
+
+    .space-nav-center {
+        gap: 10px;
+    }
+
+    .space-nav-center .active {
+        font-size: 10px;
+        letter-spacing: 1px;
+    }
+
+    .ai-status {
+        padding: 9px 10px;
+        font-size: 11px;
+    }
+
+    .space-nav-actions {
+        gap: 8px;
+    }
+
+    .space-nav-actions .add-investment-button,
+    .signout-button {
+        padding: 0 12px;
+        font-size: 12px;
+    }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 760px) {
+    .space-nav {
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        padding: 15px 18px;
+    }
+
+    .space-logo {
+        font-size: 21px;
+    }
+
+    .logo-mark {
+        width: 38px;
+        height: 38px;
+    }
+
+    .space-nav-center {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .space-nav-actions {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .space-nav-actions .add-investment-button,
+    .signout-button {
+        min-height: 44px;
+    }
+}
+
+@media (max-width: 400px) {
+    .space-nav-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .space-nav-actions .add-investment-button,
+    .signout-button {
+        width: 100%;
+        padding: 0 9px;
+        font-size: 11px;
+    }
+
+    .ai-status {
+        font-size: 10px;
+    }
+}
+
 
 /* =========================================
    MAIN CONTENT
@@ -1314,4 +1487,33 @@
     font-size: 11px;
 
     line-height: 1.5;
+}
+
+.space-nav-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+.signout-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #e5e7eb;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.signout-button:hover {
+    background: rgba(248, 113, 113, 0.12);
+    border-color: rgba(248, 113, 113, 0.4);
 }

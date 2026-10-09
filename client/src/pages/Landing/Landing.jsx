@@ -7,8 +7,10 @@ import {
 } from "lucide-react";
 
 import "./Landing.css";
+import { useNavigate } from "react-router-dom";
 
 const Landing = () => {
+    const navigate = useNavigate();
     return (
         <main className="landing">
 
@@ -36,7 +38,7 @@ const Landing = () => {
                     AI intelligence active
                 </div>
 
-                <button className="nav-login">
+                <button className="nav-login" onClick={() => navigate("/login")}>
                     Sign in
                 </button>
 
@@ -76,7 +78,7 @@ const Landing = () => {
 
                     <div className="hero-actions">
 
-                        <button className="hero-button">
+                        <button className="hero-button" onClick={() => navigate("/investment-space")}>
                             Enter your investment space
                             <ArrowRight size={18} />
                         </button>

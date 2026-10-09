@@ -7,38 +7,39 @@ import {
 
 import Landing from "./pages/Landing/Landing";
 import Login from "./pages/Login/Login";
+import Signup from "./pages/Signup/Signup";
 import InvestmentSpace from "./pages/InvestmentSpace/InvestmentSpace";
+import Onboarding from "./pages/Onboarding/Onboarding";
+
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => {
     return (
-        <BrowserRouter>
+         <BrowserRouter>
             <Routes>
+                {/* Public pages */}
+                <Route path="/" element={<Landing />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
 
-                <Route
-                    path="/"
-                    element={<Landing />}
-                />
+                {/* Protected pages */}
+                <Route element={<ProtectedRoute />}>
+                    <Route
+                        path="/onboarding"
+                        element={<Onboarding />}
+                    />
 
-                <Route
-                    path="/login"
-                    element={<Login />}
-                />
+                    <Route
+                        path="/investment-space"
+                        element={<InvestmentSpace />}
+                    />
+                </Route>
 
-                <Route
-                    path="/investment-space"
-                    element={<InvestmentSpace />}
-                />
-
+                {/* Unknown routes */}
                 <Route
                     path="*"
-                    element={
-                        <Navigate
-                            to="/"
-                            replace
-                        />
-                    }
+                    element={<Navigate to="/" replace />}
                 />
-
             </Routes>
         </BrowserRouter>
     );

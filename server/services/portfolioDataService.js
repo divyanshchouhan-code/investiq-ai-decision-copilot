@@ -27,12 +27,12 @@ const getInvestmentsWithCurrentValue = async (
     /*
      * Fetch market prices for all holdings.
      *
-     * Promise.all allows the independent
-     * price requests to run together.
+     * Promise.allSettled allows us to continue
+     * even if one market price request fails.
      */
 
     const priceResults =
-        await Promise.all(
+        await Promise.allSettled(
             investments.map(
                 (investment) =>
                     getCurrentPrice(
@@ -44,8 +44,65 @@ const getInvestmentsWithCurrentValue = async (
     return investments.map(
         (investment, index) => {
 
+            const priceResult =
+                priceResults[index];
+
+            /*
+             * If market data is unavailable
+             * for this symbol, don't crash
+             * the entire portfolio.
+             */
+
+            if (
+                priceResult.status ===
+                "rejected"
+            ) {
+                return {
+                    id: investment._id,
+
+                    symbol:
+                        investment.symbol,
+
+                    assetType:
+                        investment.assetType,
+
+                    quantity:
+                        investment.quantity,
+
+                    buyPrice:
+                        investment.buyPrice,
+
+                    currentPrice:
+                        null,
+
+                    investedValue:
+                        Number(
+                            (
+                                investment.quantity *
+                                investment.buyPrice
+                            ).toFixed(2)
+                        ),
+
+                    currentValue:
+                        null,
+
+                    marketDataAvailable:
+                        false,
+
+                    marketDataError:
+                        priceResult.reason
+                            ?.message ||
+                        "Market data unavailable.",
+                };
+            }
+
+            /*
+             * Market price successfully
+             * fetched.
+             */
+
             const currentPrice =
-                priceResults[index].price;
+                priceResult.value.price;
 
             const investedValue =
                 investment.quantity *
@@ -84,6 +141,12 @@ const getInvestmentsWithCurrentValue = async (
                     Number(
                         currentValue.toFixed(2)
                     ),
+
+                marketDataAvailable:
+                    true,
+
+                marketDataError:
+                    null,
             };
         }
     );

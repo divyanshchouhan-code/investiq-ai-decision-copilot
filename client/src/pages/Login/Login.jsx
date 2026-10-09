@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
     ArrowRight,
     LockKeyhole,
@@ -319,9 +319,9 @@ const Login = () => {
                                 New to InvestIQ?
                             </span>
 
-                            <button type="button">
+                            <Link to="/signup">
                                 Create your account
-                            </button>
+                            </Link>
 
                         </div>
 

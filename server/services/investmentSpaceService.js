@@ -1,4 +1,8 @@
 const {
+    getPortfolioActions
+} = require("./actionService");
+
+const {
     getInvestmentsWithCurrentValue
 } = require("./portfolioDataService");
 
@@ -82,7 +86,10 @@ const getInvestmentSpaceData = async (userId) => {
 
             insights: [
                 "You don't have any investments in your portfolio yet."
-            ]
+            ],
+            actions: [],
+
+            holdings: []
         };
     }
 
@@ -218,6 +225,13 @@ const getInvestmentSpaceData = async (userId) => {
             analytics.largestHolding
         );
 
+    const actions =
+        getPortfolioActions({
+            investments: investmentsWithValue,
+            portfolioRisk: risk,
+            concentration: analytics.concentration,
+            riskPreference: user.riskPreference,
+        });
 
     // --------------------------------
     // FINAL RESPONSE
@@ -231,7 +245,12 @@ const getInvestmentSpaceData = async (userId) => {
 
         risk,
 
-        insights
+        insights,
+
+        actions,
+
+        holdings: investmentsWithValue
+
 
     };
 };

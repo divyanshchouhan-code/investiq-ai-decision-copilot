@@ -84,7 +84,7 @@ const updateInvestment = async(investmentId, userId, updateData) => {
         updateData,
         {
             new: true,
-            runvalidators: true,
+            runValidators: true,
         }
     );
 
@@ -119,36 +119,36 @@ const deleteInvestment = async (investmentId, userId) => {
     };
 };
 
+const getValuedInvestments = (investments) => {
+    return investments.filter(
+        (investment) =>
+            investment.marketDataAvailable !== false &&
+            Number.isFinite(investment.currentValue)
+    );
+};
+
 
 const getPortfolioSummary = async (userId) => {
     if (!userId) {
         throw new Error("User ID is required.");
     }
 
-    const investments = await getInvestmentsWithCurrentValue(userId);
+    const investments =
+        await getInvestmentsWithCurrentValue(userId);
 
-    if (investments.length === 0) {
-        return {
-            success: true,
-            summary: {
-                totalInvested: 0,
-                currentValue: 0,
-                totalPnL: 0,
-                returnPercentage: 0,
-                numberOfHoldings: 0,
-            },
-        };
-    }
+    const valuedInvestments =
+        getValuedInvestments(investments);
 
     let totalInvested = 0;
     let currentValue = 0;
 
-    for (const investment of investments) {
+    for (const investment of valuedInvestments) {
         totalInvested += investment.investedValue;
         currentValue += investment.currentValue;
     }
 
-    const totalPnL = currentValue - totalInvested;
+    const totalPnL =
+        currentValue - totalInvested;
 
     const returnPercentage =
         totalInvested > 0
@@ -157,12 +157,33 @@ const getPortfolioSummary = async (userId) => {
 
     return {
         success: true,
+
         summary: {
-            totalInvested: Number(totalInvested.toFixed(2)),
-            currentValue: Number(currentValue.toFixed(2)),
-            totalPnL: Number(totalPnL.toFixed(2)),
-            returnPercentage: Number(returnPercentage.toFixed(2)),
-            numberOfHoldings: investments.length,
+            totalInvested:
+                Number(totalInvested.toFixed(2)),
+
+            currentValue:
+                Number(currentValue.toFixed(2)),
+
+            totalPnL:
+                Number(totalPnL.toFixed(2)),
+
+            returnPercentage:
+                Number(returnPercentage.toFixed(2)),
+
+            numberOfHoldings:
+                investments.length,
+
+            valuedHoldings:
+                valuedInvestments.length,
+
+            unavailableHoldings:
+                investments.length -
+                valuedInvestments.length,
+
+            isPartial:
+                valuedInvestments.length !==
+                investments.length,
         },
     };
 };
@@ -170,17 +191,21 @@ const getPortfolioSummary = async (userId) => {
 
 
 const calculateAllocation = (investmentsWithValue) => {
+    const valuedInvestments =
+        getValuedInvestments(investmentsWithValue);
+
     let total = 0;
     const allocation = {};
 
-    for (const investment of investmentsWithValue) {
+    for (const investment of valuedInvestments) {
         total += investment.currentValue;
 
         if (!allocation[investment.assetType]) {
             allocation[investment.assetType] = 0;
         }
 
-        allocation[investment.assetType] += investment.currentValue;
+        allocation[investment.assetType] +=
+            investment.currentValue;
     }
 
     if (total === 0) {
@@ -189,7 +214,10 @@ const calculateAllocation = (investmentsWithValue) => {
 
     for (const assetType in allocation) {
         allocation[assetType] = Number(
-            ((allocation[assetType] / total) * 100).toFixed(2)
+            (
+                (allocation[assetType] / total) *
+                100
+            ).toFixed(2)
         );
     }
 
@@ -197,14 +225,20 @@ const calculateAllocation = (investmentsWithValue) => {
 };
 
 const findLargestHolding = (investmentsWithValue) => {
-    if (investmentsWithValue.length === 0) {
+    const valuedInvestments =
+        getValuedInvestments(investmentsWithValue);
+
+    if (valuedInvestments.length === 0) {
         return null;
     }
 
-    let largest = investmentsWithValue[0];
+    let largest = valuedInvestments[0];
 
-    for (const investment of investmentsWithValue) {
-        if (investment.currentValue > largest.currentValue) {
+    for (const investment of valuedInvestments) {
+        if (
+            investment.currentValue >
+            largest.currentValue
+        ) {
             largest = investment;
         }
     }
@@ -221,50 +255,84 @@ const getPortfolioAnalytics = async (userId) => {
     const investmentsWithValue =
         await getInvestmentsWithCurrentValue(userId);
 
-    if (investmentsWithValue.length === 0) {
+    const valuedInvestments =
+        getValuedInvestments(investmentsWithValue);
+
+    if (valuedInvestments.length === 0) {
         return {
             success: true,
+
             analytics: {
                 allocation: {},
                 largestHolding: null,
                 concentration: 0,
-                numberOfHoldings: 0,
+                numberOfHoldings:
+                    investmentsWithValue.length,
                 numberOfAssetTypes: 0,
+                valuedHoldings: 0,
+                unavailableHoldings:
+                    investmentsWithValue.length,
+                isPartial:
+                    investmentsWithValue.length > 0,
             },
         };
     }
 
     const allocation =
-        calculateAllocation(investmentsWithValue);
+        calculateAllocation(valuedInvestments);
 
     const largestHolding =
-        findLargestHolding(investmentsWithValue);
+        findLargestHolding(valuedInvestments);
 
-    const totalValue = investmentsWithValue.reduce(
-        (total, investment) =>
-            total + investment.currentValue,
-        0
-    );
+    const totalValue =
+        valuedInvestments.reduce(
+            (total, investment) =>
+                total + investment.currentValue,
+            0
+        );
 
     const concentration =
         totalValue > 0
-            ? (largestHolding.currentValue / totalValue) * 100
+            ? (
+                largestHolding.currentValue /
+                totalValue
+            ) * 100
             : 0;
 
     const assetTypes = new Set(
-        investmentsWithValue.map(
-            (investment) => investment.assetType
+        valuedInvestments.map(
+            (investment) =>
+                investment.assetType
         )
     );
 
     return {
         success: true,
+
         analytics: {
             allocation,
+
             largestHolding,
-            concentration: Number(concentration.toFixed(2)),
-            numberOfHoldings: investmentsWithValue.length,
-            numberOfAssetTypes: assetTypes.size,
+
+            concentration:
+                Number(concentration.toFixed(2)),
+
+            numberOfHoldings:
+                investmentsWithValue.length,
+
+            numberOfAssetTypes:
+                assetTypes.size,
+
+            valuedHoldings:
+                valuedInvestments.length,
+
+            unavailableHoldings:
+                investmentsWithValue.length -
+                valuedInvestments.length,
+
+            isPartial:
+                valuedInvestments.length !==
+                investmentsWithValue.length,
         },
     };
 };
