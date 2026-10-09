@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import "./Login.css";
+import {serverUrl} from "../../api/axios"
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -29,7 +30,7 @@ const Login = () => {
 
         try {
             const response = await fetch(
-                "http://localhost:5000/api/auth/login",
+                `${serverUrl}/auth/login`,
                 {
                     method: "POST",
                     headers: {

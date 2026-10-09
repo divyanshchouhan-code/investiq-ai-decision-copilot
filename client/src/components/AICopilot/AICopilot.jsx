@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import "./AICopilot.css";
+import {serverUrl} from "../../api/axios"
 
 const AICopilot = () => {
 
@@ -41,7 +42,7 @@ const AICopilot = () => {
 
             const apiResponse =
                 await fetch(
-                    "http://localhost:5000/api/ai/chat",
+                    `${serverUrl}/ai/chat`,
                     {
                         method: "POST",
 

@@ -1,7 +1,9 @@
 import axios from "axios";
 
+export const serverUrl = "https://investiqapi.ramanlohar.site/api";
+
 const api = axios.create({
-    baseURL: "https://investiqapi.ramanlohar.site/api",
+    baseURL: serverUrl,
     headers: {
         "Content-Type": "application/json",
     },

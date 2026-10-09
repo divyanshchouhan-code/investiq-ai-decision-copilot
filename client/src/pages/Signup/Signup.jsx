@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import "./Signup.css";
+import {serverUrl} from "../../api/axios"
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -58,7 +59,7 @@ const Signup = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/register",
+        `${serverUrl}/auth/register`,
         {
           method: "POST",
           headers: {

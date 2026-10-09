@@ -11,6 +11,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import "./Onboarding.css";
+import {serverUrl} from "../../api/axios"
 
 const GOALS = [
   {
@@ -87,7 +88,7 @@ const Onboarding = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/profile",
+        `${serverUrl}/auth/profile`,
         {
           method: "PUT",
           headers: {
