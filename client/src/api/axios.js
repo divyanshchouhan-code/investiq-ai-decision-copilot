@@ -1,12 +1,12 @@
 import axios from "axios";
 
-export const serverUrl = "https://investiqapi.ramanlohar.site/api";
+const productionUrl = "https://investiqapi.ramanlohar.site/api";
+const developmentUrl = "http://localhost:5000/api";
+
+export const serverUrl = import.meta.env.VITE_DEV ? developmentUrl : productionUrl;
 
 const api = axios.create({
     baseURL: serverUrl,
-    headers: {
-        "Content-Type": "application/json",
-    },
 });
 
 // Automatically attach the JWT token to requests.

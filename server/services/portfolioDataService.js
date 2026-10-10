@@ -1,157 +1,108 @@
+
 const Investment = require("../models/Investment");
+const { getCurrentPrice } = require("./marketDataService");
 
-const {
-    getCurrentPrice,
-} = require("./marketDataService");
-
-
-const getInvestmentsWithCurrentValue = async (
-    userId
-) => {
-
+const getInvestmentsWithCurrentValue = async (userId) => {
     if (!userId) {
-        throw new Error(
-            "User ID is required."
-        );
+        throw new Error("User ID is required.");
     }
 
-    const investments =
-        await Investment.find({
-            userId,
-        });
+    const investments = await Investment.find({ userId });
 
     if (investments.length === 0) {
         return [];
     }
 
-    /*
-     * Fetch market prices for all holdings.
-     *
-     * Promise.allSettled allows us to continue
-     * even if one market price request fails.
-     */
+    const groups = new Map();
 
-    const priceResults =
-        await Promise.allSettled(
-            investments.map(
-                (investment) =>
-                    getCurrentPrice(
-                        investment.symbol
-                    )
-            )
-        );
+    for (const investment of investments) {
+        const symbol = investment.symbol.trim().toUpperCase();
+        const assetType = investment.assetType;
+        const key = `${symbol}:${assetType}`;
 
-    return investments.map(
-        (investment, index) => {
+        if (!groups.has(key)) {
+            groups.set(key, {
+                symbol,
+                assetType,
+                quantity: 0,
+                investedValue: 0,
+                buyCurrency: "INR",
+                purchaseIds: [],
+                purchases: [],
+                purchaseCount: 0,
+            });
+        }
 
-            const priceResult =
-                priceResults[index];
+        const group = groups.get(key);
 
-            /*
-             * If market data is unavailable
-             * for this symbol, don't crash
-             * the entire portfolio.
-             */
+        group.quantity += investment.quantity;
+        group.investedValue += investment.quantity * investment.buyPrice;
+        group.purchaseIds.push(investment._id.toString());
 
-            if (
-                priceResult.status ===
-                "rejected"
-            ) {
-                return {
-                    id: investment._id,
+        group.purchases.push({
+            id: investment._id.toString(),
+            quantity: investment.quantity,
+            buyPrice: investment.buyPrice,
+            purchaseDate: investment.purchaseDate,
+            assetType: investment.assetType,
+        });
 
-                    symbol:
-                        investment.symbol,
+        group.purchaseCount += 1;
+    }
 
-                    assetType:
-                        investment.assetType,
+    const positions = Array.from(groups.values());
 
-                    quantity:
-                        investment.quantity,
+    const priceResults = await Promise.allSettled(
+        positions.map((position) => getCurrentPrice(position.symbol))
+    );
 
-                    buyPrice:
-                        investment.buyPrice,
+    return positions.map((position, index) => {
+        const priceResult = priceResults[index];
 
-                    currentPrice:
-                        null,
+        const averageBuyPrice =
+            position.quantity > 0
+                ? position.investedValue / position.quantity
+                : 0;
 
-                    investedValue:
-                        Number(
-                            (
-                                investment.quantity *
-                                investment.buyPrice
-                            ).toFixed(2)
-                        ),
-
-                    currentValue:
-                        null,
-
-                    marketDataAvailable:
-                        false,
-
-                    marketDataError:
-                        priceResult.reason
-                            ?.message ||
-                        "Market data unavailable.",
-                };
-            }
-
-            /*
-             * Market price successfully
-             * fetched.
-             */
-
-            const currentPrice =
-                priceResult.value.price;
-
-            const investedValue =
-                investment.quantity *
-                investment.buyPrice;
-
-            const currentValue =
-                investment.quantity *
-                currentPrice;
-
+        if (priceResult.status === "rejected") {
             return {
-                id: investment._id,
-
-                symbol:
-                    investment.symbol,
-
-                assetType:
-                    investment.assetType,
-
-                quantity:
-                    investment.quantity,
-
-                buyPrice:
-                    investment.buyPrice,
-
-                currentPrice:
-                    Number(
-                        currentPrice.toFixed(2)
-                    ),
-
-                investedValue:
-                    Number(
-                        investedValue.toFixed(2)
-                    ),
-
-                currentValue:
-                    Number(
-                        currentValue.toFixed(2)
-                    ),
-
-                marketDataAvailable:
-                    true,
-
+                ...position,
+                id: position.symbol + ":" + position.assetType,
+                buyPrice: Number(averageBuyPrice.toFixed(2)),
+                investedValue: Number(position.investedValue.toFixed(2)),
+                currentPrice: null,
+                currentValue: null,
+                profitLoss: null,
+                returnPercentage: null,
+                marketDataAvailable: false,
                 marketDataError:
-                    null,
+                    priceResult.reason?.message || "Market data unavailable.",
             };
         }
-    );
-};
 
+        const currentPrice = Number(priceResult.value.price);
+        const currentValue = position.quantity * currentPrice;
+        const profitLoss = currentValue - position.investedValue;
+
+        return {
+            ...position,
+            id: position.symbol + ":" + position.assetType,
+            buyPrice: Number(averageBuyPrice.toFixed(2)),
+            investedValue: Number(position.investedValue.toFixed(2)),
+            currentPrice: Number(currentPrice.toFixed(2)),
+            currentValue: Number(currentValue.toFixed(2)),
+            profitLoss: Number(profitLoss.toFixed(2)),
+            returnPercentage:
+                position.investedValue > 0
+                    ? Number(
+                          ((profitLoss / position.investedValue) * 100).toFixed(2)
+                      )
+                    : 0,
+            marketDataAvailable: true,
+            marketDataError: null,
+        };
+    });
+};
 
 module.exports = {
     getInvestmentsWithCurrentValue,

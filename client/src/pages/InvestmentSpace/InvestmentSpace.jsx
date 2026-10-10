@@ -29,6 +29,9 @@ const InvestmentSpace = () => {
     const [actions, setActions] = useState([]);
     const [holdings, setHoldings] = useState([]);
     const [aiAnalysis, setAiAnalysis] = useState(null);
+    const [actionReview, setActionReview] = useState(null);
+    const [actionReviewError, setActionReviewError] = useState("");
+    
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -76,6 +79,28 @@ const InvestmentSpace = () => {
             setInsights(investmentSpaceData.insights || []);
             setActions(investmentSpaceData.actions || []);
             setHoldings(investmentSpaceData.holdings || []);
+
+            const reviewSymbol = "MSFT";
+
+            try {
+                const reviewResult = await api.get(
+                    "/portfolio/action-evidence",
+                    {
+                        params: {
+                            symbol: reviewSymbol
+                        }
+                    }
+                );
+
+                setActionReview(reviewResult.data.ruleEvaluation || null);
+                setActionReviewError("");
+            } catch (reviewError) {
+                setActionReview(null);
+                setActionReviewError(
+                    reviewError.response?.data?.message ||
+                    "Action risk review is currently unavailable."
+                );
+            }
 
             if (aiResult.status === "fulfilled") {
                 setAiAnalysis(aiResult.value.data?.analysis || null);
@@ -539,6 +564,93 @@ const InvestmentSpace = () => {
                 </motion.section>
 
                 <PortfolioAnalytics holdings={holdings} />
+
+                                
+                <motion.section
+                    className="action-risk-review glass"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <div className="action-risk-review-header">
+                        <div>
+                            <span className="action-risk-eyebrow">
+                                DETERMINISTIC ANALYSIS
+                            </span>
+                            <h2>Action Risk Review</h2>
+                            <p>
+                                Historical and portfolio risk flags for MSFT.
+                            </p>
+                        </div>
+                        <ShieldAlert size={24} />
+                    </div>
+
+                    {actionReviewError ? (
+                        <p className="action-risk-message">
+                            {actionReviewError}
+                        </p>
+                    ) : !actionReview ? (
+                        <p className="action-risk-message">
+                            Loading action risk review...
+                        </p>
+                    ) : (
+                        <>
+                            <div className="action-risk-status">
+                                <span>Status</span>
+                                <strong>
+                                    {actionReview.ruleStatus.replaceAll("_", " ")}
+                                </strong>
+                            </div>
+
+                            {actionReview.ruleFlags.length > 0 ? (
+                                <div className="action-risk-flags">
+                                    {actionReview.ruleFlags.map((flag) => (
+                                        <div
+                                            className="action-risk-flag"
+                                            key={flag.rule}
+                                        >
+                                            <div className="action-risk-flag-top">
+                                                <strong>
+                                                    {flag.rule.replaceAll("_", " ")}
+                                                </strong>
+                                                <span>{flag.severity}</span>
+                                            </div>
+                                            <p>{flag.message}</p>
+                                            <small>
+                                                Observed: {flag.observedValue}
+                                                {flag.threshold !== undefined
+                                                    ? ` · Threshold: ${flag.threshold}`
+                                                    : ""}
+                                            </small>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="action-risk-message">
+                                    No configured rule flags were triggered.
+                                </p>
+                            )}
+
+                            {actionReview.reviewNotes?.length > 0 && (
+                                <div className="action-risk-notes">
+                                    {actionReview.reviewNotes.map((note, index) => (
+                                        <p key={index}>{note}</p>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="action-risk-disclaimer">
+                                <ShieldAlert size={17} />
+                                <p>
+                                    This panel identifies risk factors for further
+                                    review. It does not provide a buy, hold, reduce,
+                                    or sell recommendation.
+                                </p>
+                            </div>
+                        </>
+                    )}
+                </motion.section>
+
 
                 {/* Holdings and action intelligence */}
 

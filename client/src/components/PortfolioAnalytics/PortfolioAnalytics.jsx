@@ -95,7 +95,7 @@ const PortfolioAnalytics = ({ holdings = [] }) => {
                     {analytics.allocation.length ? (
                         <div className="analytics-chart">
                             <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
+                               <PieChart>
                                     <Pie
                                         data={analytics.allocation}
                                         dataKey="value"
@@ -104,14 +104,12 @@ const PortfolioAnalytics = ({ holdings = [] }) => {
                                         outerRadius="82%"
                                         paddingAngle={3}
                                     >
-                                        {analytics.allocation.map(
-                                            (entry, index) => (
-                                                <Cell
-                                                    key={entry.name}
-                                                    fill={COLORS[index % COLORS.length]}
-                                                />
-                                            )
-                                        )}
+                                        {analytics.allocation.map((entry, index) => (
+                                            <Cell
+                                                key={`${entry.name}-${index}`}
+                                                fill={COLORS[index % COLORS.length]}
+                                            />
+                                        ))}
                                     </Pie>
                                     <Tooltip
                                         formatter={(value) => formatCurrency(value)}

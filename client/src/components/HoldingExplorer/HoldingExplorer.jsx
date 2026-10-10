@@ -40,6 +40,7 @@ const HoldingExplorer = ({
     const [deleteSuccess, setDeleteSuccess] = useState("");
     const [editError, setEditError] = useState("");
     const [editSuccess, setEditSuccess] = useState("");
+    const [selectedPurchases, setSelectedPurchases] = useState({});
 
     const [formData, setFormData] = useState({
         quantity: "",
@@ -262,11 +263,9 @@ const HoldingExplorer = ({
                         Number.isFinite(holding.currentPrice);
 
                     const returnPercentage =
-                        hasMarketData && holding.investedValue > 0
-                            ? ((holding.currentValue -
-                                  holding.investedValue) /
-                                  holding.investedValue) *
-                              100
+                        hasMarketData &&
+                        Number.isFinite(holding.returnPercentage)
+                            ? holding.returnPercentage
                             : null;
 
                     const isProfit =
@@ -282,7 +281,16 @@ const HoldingExplorer = ({
                               ? ArrowUpRight
                               : Minus;
 
-                    const investmentId = holding.id || holding._id;
+                    const purchases = holding.purchases || [];
+
+                    const selectedPurchaseId = selectedPurchases[holding.id];
+
+                    const selectedPurchase =
+                        purchases.find(
+                            (purchase) => purchase.id === selectedPurchaseId
+                        ) || purchases[0] || null;
+
+                    const investmentId = selectedPurchase?.id || null;
                     const isDeleting = deletingId === investmentId;
 
                     return (
@@ -305,6 +313,31 @@ const HoldingExplorer = ({
                                     </div>
                                 </div>
 
+                                {purchases.length > 1 && (
+                                    <div className="holding-purchase-selector">
+                                        <label htmlFor={`purchase-${holding.id}`}>
+                                            Select purchase to edit or delete
+                                        </label>
+
+                                        <select
+                                            id={`purchase-${holding.id}`}
+                                            value={selectedPurchase?.id || ""}
+                                            onChange={(event) =>
+                                                setSelectedPurchases((previous) => ({
+                                                    ...previous,
+                                                    [holding.id]: event.target.value,
+                                                }))
+                                            }
+                                        >
+                                            {purchases.map((purchase) => (
+                                                <option key={purchase.id} value={purchase.id}>
+                                                    {`Qty: ${purchase.quantity} | Buy: ${formatCurrency(purchase.buyPrice)} | ${new Date(purchase.purchaseDate).toLocaleDateString("en-IN")}`}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
                                 <div className="holding-card-actions">
                                     {displayAction && (
                                         <div
@@ -322,8 +355,15 @@ const HoldingExplorer = ({
                                     <button
                                         type="button"
                                         className="holding-edit-button"
-                                        onClick={() => openEditForm(holding)}
-                                        disabled={Boolean(deletingId) || saving}
+                                        onClick={() => {
+                                            if (selectedPurchase) {
+                                                openEditForm({
+                                                    ...selectedPurchase,
+                                                    symbol: holding.symbol,
+                                                });
+                                            }
+                                        }}
+                                        disabled={!selectedPurchase || Boolean(deletingId) || saving}
                                     >
                                         <Pencil size={14} />
                                         <span>Edit</span>
@@ -332,7 +372,14 @@ const HoldingExplorer = ({
                                     <button
                                         type="button"
                                         className="holding-delete-button"
-                                        onClick={() => handleDelete(holding)}
+                                        onClick={() => {
+                                            if (selectedPurchase) {
+                                                handleDelete({
+                                                    ...selectedPurchase,
+                                                    symbol: holding.symbol,
+                                                });
+                                            }
+                                        }}
                                         disabled={isDeleting || saving || !investmentId}
                                     >
                                         <Trash2 size={14} />

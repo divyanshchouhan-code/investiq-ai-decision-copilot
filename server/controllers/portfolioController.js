@@ -9,6 +9,26 @@ const {
 } = require("../services/portfolioService");
 
 const {
+    getHistoricalMetrics
+} = require("../services/historicalMetricsService");
+
+const {
+    getInvestmentsWithCurrentValue
+} = require("../services/portfolioDataService");
+
+const {
+    evaluateActionRules
+} = require("../services/actionRuleService");
+
+const {
+    getHistoricalPrices
+} = require("../services/historicalDataService");
+
+const {
+    getActionEvidence
+} = require("../services/actionEvidenceService");
+
+const {
     getInvestmentSpaceData
 } = require("../services/investmentSpaceService");
 
@@ -205,6 +225,105 @@ const getInvestmentSpace = async (req, res) => {
     }
 };
 
+const getHistoricalMetricsController = async (req, res) => {
+    try {
+        const { symbol, debug } = req.query;
+
+        if (!symbol || typeof symbol !== "string") {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide a stock symbol."
+            });
+        }
+
+        const result = await getHistoricalMetrics(symbol);
+
+        if (debug === "true") {
+            const historical = await getHistoricalPrices(symbol);
+
+            return res.status(200).json({
+                ...result,
+                validationData: {
+                    prices: historical.prices,
+                    fetchedAt: historical.fetchedAt
+                }
+            });
+        }
+
+        return res.status(200).json(result);
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+
+
+const getActionEvidenceController = async (req, res) => {
+    try {
+        const { symbol } = req.query;
+
+        if (!symbol || typeof symbol !== "string") {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide a stock symbol."
+            });
+        }
+
+        const evidenceReport = await getActionEvidence({
+            symbol,
+            userId: req.userId
+        });
+
+        const ruleEvaluation = evaluateActionRules(evidenceReport);
+
+        return res.status(200).json({
+            ...evidenceReport,
+            ruleEvaluation
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+
+const getMarketDataStatusController = async (req, res) => {
+    try {
+        const investments = await getInvestmentsWithCurrentValue(req.userId);
+
+        const holdings = investments.map((investment) => ({
+            symbol: investment.symbol,
+            assetType: investment.assetType,
+            marketDataAvailable: investment.marketDataAvailable,
+            currentPrice: investment.currentPrice,
+            marketDataError: investment.marketDataError
+        }));
+
+        return res.status(200).json({
+            success: true,
+            totalHoldings: holdings.length,
+            availableHoldings: holdings.filter(
+                (holding) => holding.marketDataAvailable
+            ).length,
+            unavailableHoldings: holdings.filter(
+                (holding) => !holding.marketDataAvailable
+            ).length,
+            holdings
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+
 module.exports = {
     createInvestment,
     getInvestments,
@@ -216,4 +335,7 @@ module.exports = {
     getPortfolioRiskController,
     getInvestmentInsightsController,
     getInvestmentSpace,
+    getHistoricalMetricsController,
+    getActionEvidenceController,
+    getMarketDataStatusController,
 };
