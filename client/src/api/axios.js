@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const productionUrl = "https://investiq.vercel.app/api";
+const productionUrl = "https://investiq-api-sandy.vercel.app/";
 const developmentUrl = "http://localhost:5000/api";
 
 export const serverUrl = import.meta.env.DEV ? developmentUrl : productionUrl;

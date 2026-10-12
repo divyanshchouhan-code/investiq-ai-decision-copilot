@@ -1,3 +1,4 @@
+
 const express = require("express");
 const cors = require("cors");
 
@@ -7,11 +8,23 @@ const marketDataRoutes = require("./routes/marketDataRoutes");
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://investiq-ai-pi.vercel.app",
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
-    res.send("InvestIQ API Running");
+  res.send("InvestIQ API Running");
 });
 
 app.use("/api/auth", authRoutes);
