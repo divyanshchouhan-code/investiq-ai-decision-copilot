@@ -1,9 +1,9 @@
 import axios from "axios";
 
-const productionUrl = "https://investiqapi.ramanlohar.site/api";
+const productionUrl = "https://investiq.vercel.app/api";
 const developmentUrl = "http://localhost:5000/api";
 
-export const serverUrl = import.meta.env.VITE_DEV ? developmentUrl : productionUrl;
+export const serverUrl = import.meta.env.DEV ? developmentUrl : productionUrl;
 
 const api = axios.create({
     baseURL: serverUrl,
