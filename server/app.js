@@ -5,6 +5,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const portfolioRoutes = require("./routes/portfolioRoutes");
 const marketDataRoutes = require("./routes/marketDataRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 
 const app = express();
 
@@ -46,5 +47,6 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/market", marketDataRoutes);
+app.use("/api/ai", aiRoutes);
 
 module.exports = app;
