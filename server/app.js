@@ -1,7 +1,7 @@
 
 const express = require("express");
 const cors = require("cors");
-
+const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const portfolioRoutes = require("./routes/portfolioRoutes");
 const marketDataRoutes = require("./routes/marketDataRoutes");
@@ -22,6 +22,22 @@ app.use(
 );
 
 app.use(express.json());
+
+
+app.use("/api", async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("Database unavailable:", error.message);
+
+    return res.status(503).json({
+      success: false,
+      message: "Database temporarily unavailable. Please try again.",
+    });
+  }
+});
+
 
 app.get("/", (req, res) => {
   res.send("InvestIQ API Running");
